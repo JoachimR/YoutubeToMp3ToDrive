@@ -1,2 +1,4 @@
 # YoutubeToMp3ToDrive
-Java Youtube Channel RSS Feed To Mp3 To Drive
+
+A Java program that parses a Youtube channel RSS feed, downloads the files and converts them to audio, and then uploads the audio files to Google Drive
+

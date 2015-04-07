@@ -1,10 +1,9 @@
 package de.reiss;
 
 import com.ernieyu.feedparser.Feed;
+import com.ernieyu.feedparser.FeedException;
 import com.ernieyu.feedparser.Item;
 import de.reiss.modules.*;
-import de.reiss.modules.downloader.DownloadItem;
-import de.reiss.modules.downloader.YoutubeAudioDownloader;
 import de.reiss.modules.drive.DriveApi;
 import de.reiss.modules.drive.DriveService;
 
@@ -37,98 +36,159 @@ import java.util.List;
 public class Program {
 
     public static void main(String[] args) {
-
-        String url = Config.YOUTUBE_RSS_FEED_URL;
-
-        deleteAllFileParts();
-
-
-        int max = 10;
-        int counter = 0;
         try {
-            Feed feed = FeedExtractor.getFeed(url);
+            final List<com.google.api.services.drive.model.File> allFilesAlreadyUploaded =
+                    DriveApi.retrieveAllUploadedFiles(DriveService.getDriveService());
 
             List<DownloadItem> allDownloadItems = new ArrayList<DownloadItem>();
-            List<Item> allItems = feed.getItemList();
-            for (Item item : allItems) {
-                counter++;
-                // TODO remove
+
+            // printAllVideosFromChannel();
+
+            for (int index = 1; index < 5000; index += 50) {
+
+
+                String url = Config.YOUTUBE_RSS_FEED_URL;
+
+                url += "?&max-results=50&start-index=" + index;
+
+                deleteAllFileParts();
+
+
+                int max = 10;
+                int counter = 0;
+
+                Feed feed = FeedExtractor.getFeed(url);
+
+
+                List<Item> allItems = feed.getItemList();
+                for (Item item : allItems) {
+                    counter++;
 //                if (counter > max) {
 //                    break;
 //                }
-//
-                // TODO remove
-//                if (  !item.getTitle().contains("Erich")) {
-//                    continue;
-//                }
+
+//                    if (!item.getTitle().contains("Erich")) {
+//                        continue;
+//                    }
 
 
-                // TODO remove
-//                if (!item.getTitle().contains("Waffenlieferungen") ) {
-//                    continue;
-//                }
 
-                DownloadItem downloadItem = new DownloadItem();
-                downloadItem.rssItem = item;
+                    System.out.println("==============================================================================");
+                    System.out.println("TITLE: " + item.getTitle());
+                    System.out.println("LINK: " + item.getLink());
+                    System.out.println("PUB DATE: " + item.getPubDate());
+                    System.out.println("");
 
-                String filename = YoutubeAudioDownloader.downloadItemAsMp3(item);
 
-                if (filename.length() < 1) {
-                    continue;
-                }
+                    String filename = Utils.replaceUmlaut(item.getTitle()) + "." + Config.AUDIO_FILE_FORMAT;
 
-                downloadItem.filename = filename;
 
-                String md5 = MD5Creator.getMD5Checksum(filename);
-                if (md5.length() > 0) {
-                    downloadItem.md5 = md5;
+                    if (isFileAlreadyDownloaded(filename)) {
+                        System.out.println("File '" + filename +
+                                "' already downloaded , not doing it again.");
+                    } else {
+                        System.out.println("File '" + filename +
+                                "' not yet downloaded , downloading now.");
 
-                    com.google.api.services.drive.model.File file = uploadAndGetFile(downloadItem);
-
-                    if (file != null) {
-                        downloadItem.driveLink = file.getWebContentLink();
-                        allDownloadItems.add(downloadItem);
+                        filename = YoutubeAudioDownloader.downloadItemAsMp3(item);
                     }
 
-                }
+                    if (filename.length() < 1) {
+                        continue;
+                    }
 
+
+                    DownloadItem downloadItem = new DownloadItem();
+                    downloadItem.rssItem = item;
+
+
+                    downloadItem.filename = filename;
+
+                    String md5 = MD5Creator.getMD5Checksum(Constants.FOLDER_NAME_FILES + "/" +  filename);
+                    if (md5.length() > 0) {
+                        downloadItem.md5 = md5;
+
+                        com.google.api.services.drive.model.File file = uploadAndGetFile(downloadItem, allFilesAlreadyUploaded);
+
+                        if (file != null) {
+                            downloadItem.driveLink = file.getWebContentLink();
+                            allDownloadItems.add(downloadItem);
+                        }
+
+                    }
+
+                    System.out.println("==============================================================================");
+
+                }
             }
 
-            JsonBuilder.buildPublishJsonFromDownloadedItems(allDownloadItems);
+            boolean test = false;
 
-            DriveApi.updateFile(DriveService.getDriveService(), Config.DRIVE_PUBLISH_JSON_FILE_ID, Config.DRIVE_PUBLISH_JSON_FILE_NAME);
+            JsonBuilder.buildPublishJsonFromDownloadedItems(allDownloadItems, test);
+
+
+            java.io.File fileContent = new java.io.File(
+                    test ? Config.DRIVE_PUBLISH_JSON_TEST_FILE_NAME : Config.DRIVE_PUBLISH_JSON_FILE_NAME);
+            if (fileContent == null || !fileContent.exists()) {
+                System.out.println("Did not find file '" + fileContent + "'");
+            }
+            DriveApi.updateFile(DriveService.getDriveService(),
+                    (test ? Config.DRIVE_PUBLISH_JSON_TEST_FILE_ID : Config.DRIVE_PUBLISH_JSON_FILE_ID),
+                    (test ? Config.DRIVE_PUBLISH_JSON_TEST_FILE_NAME : Config.DRIVE_PUBLISH_JSON_FILE_NAME));
 
         } catch (Exception e) {
             e.printStackTrace();
         }
-
         System.out.println("Program finished");
     }
 
-    private static com.google.api.services.drive.model.File uploadAndGetFile(DownloadItem downloadItem) throws Exception {
-        com.google.api.services.drive.model.File result = null;
+    /**
+     * upload an item. Does not upload if the same file can already be found in a list of files that are already uploaded
+     *
+     * @param downloadItem
+     * @param allFilesUploaded
+     * @return
+     */
+    private static com.google.api.services.drive.model.File uploadAndGetFile(DownloadItem downloadItem,
+                                                                             List<com.google.api.services.drive.model.File> allFilesUploaded) {
         try {
-            List<com.google.api.services.drive.model.File> allFilesOnline = DriveApi.retrieveAllFiles(DriveService.getDriveService());
-            for (com.google.api.services.drive.model.File onlineFile : allFilesOnline) {
-                if (onlineFile != null) {
-                    String onlineMd5 = onlineFile.getMd5Checksum();
-                    if (onlineMd5 != null && onlineMd5.equals(downloadItem.md5)) {
-                        return onlineFile;
+            if (allFilesUploaded != null && !allFilesUploaded.isEmpty()) {
+                for (com.google.api.services.drive.model.File onlineFile : allFilesUploaded) {
+                    if (onlineFile != null) {
+                        String onlineMd5 = onlineFile.getMd5Checksum();
+                        if (onlineMd5 != null && onlineMd5.equals(downloadItem.md5)) {
+                            System.out.println("File '" + downloadItem.filename + "' was already uploaded, not doing it again");
+                            return onlineFile;
+                        }
                     }
                 }
             }
 
             // file not found online, thus upload it now
-            return FilesUploader.uploadNow(DriveService.getDriveService(), new File(downloadItem.filename));
-        } catch (IOException e) {
+            System.out.println("File '" + downloadItem.filename + "' is not already uploaded, doing it now");
+            return FilesUploader.uploadNow(DriveService.getDriveService(), new File(Constants.FOLDER_NAME_FILES + "/" + downloadItem.filename));
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return null;
     }
 
+    private static boolean isFileAlreadyUploaded(String md5) throws IOException {
+        List<com.google.api.services.drive.model.File> allFilesOnline = DriveApi.retrieveAllUploadedFiles(DriveService.getDriveService());
+        for (com.google.api.services.drive.model.File onlineFile : allFilesOnline) {
+            if (onlineFile != null) {
+                String onlineMd5 = onlineFile.getMd5Checksum();
+                if (onlineMd5 != null && onlineMd5.equals(md5)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
 
     public static void deleteAllFileParts() {
-        File f = new File("."); // current directory
+        File f = Utils.getDownloadedFilesDirectory();
         File[] files = f.listFiles();
         for (File file : files) {
             if (!file.isDirectory()) {
@@ -144,5 +204,61 @@ public class Program {
                 }
             }
         }
+    }
+
+
+    public static boolean isFileAlreadyDownloaded(String filenameWithFormat) {
+        File f = Utils.getDownloadedFilesDirectory();
+        File[] files = f.listFiles();
+        if (files == null || files.length < 1) {
+            return false;
+        }
+        for (File file : files) {
+            if (!file.isDirectory()) {
+
+                try {
+                    String filename = file.getName();
+                    if (filename.equals(filenameWithFormat)) {
+                        return true;
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return false;
+    }
+
+    private static void printAllVideosFromChannel() throws IOException, FeedException {
+        int counter = 0;
+        System.out.println("Starting to print all items of youtube channel '" + Config.YOUTUBE_RSS_FEED_URL + "' ");
+        System.out.println("==============================================================================");
+        String url;
+        Feed feed;
+        List<Item> allItems;
+        for (int index = 1; index < Integer.MAX_VALUE; index += 50) {
+
+            url = Config.YOUTUBE_RSS_FEED_URL + "?&max-results=50&start-index=" + index;
+            feed = FeedExtractor.getFeed(url);
+
+            if (feed == null || feed.getItemList() == null || feed.getItemList().isEmpty()) {
+                System.out.println("No more items available when using index " + index);
+                break;
+            }
+
+            allItems = feed.getItemList();
+            for (Item item : allItems) {
+                counter++;
+                System.out.println("--------------------------------------");
+                System.out.println("TITLE: " + item.getTitle());
+                System.out.println("LINK: " + item.getLink());
+                System.out.println("PUB DATE: " + item.getPubDate());
+                System.out.println("--------------------------------------");
+            }
+
+        }
+        System.out.println("==============================================================================");
+        System.out.println("End of listing items");
+        System.out.println("Amount of videos in youtube channel '" + Config.YOUTUBE_RSS_FEED_URL + "' :" + counter);
     }
 }

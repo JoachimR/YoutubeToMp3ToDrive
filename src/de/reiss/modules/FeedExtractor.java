@@ -1,12 +1,16 @@
 package de.reiss.modules;
 
-import com.ernieyu.feedparser.*;
+import com.ernieyu.feedparser.Feed;
+import com.ernieyu.feedparser.FeedException;
+import com.ernieyu.feedparser.FeedParser;
+import com.ernieyu.feedparser.FeedParserFactory;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 
 public class FeedExtractor {
 

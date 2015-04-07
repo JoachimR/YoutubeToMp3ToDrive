@@ -13,7 +13,7 @@ public class FilesUploader {
         try {
             final String filename = someFile.getName();
 
-            File file = DriveApi.insertFile(service, filename, filename);
+            File file = DriveApi.insertFile(service, filename, someFile);
             String fileId = file.getId();
 
             if (fileId != null) {

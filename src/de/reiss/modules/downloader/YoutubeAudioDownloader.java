@@ -46,7 +46,7 @@ public class YoutubeAudioDownloader {
     }
 
     private static boolean isFileAlreadyDownloaded(String filenameWithFormat) {
-        File f = new File("."); // current directory
+        File f = Utils.getDownloadedFilesDirectory();
         File[] files = f.listFiles();
         if (files == null || files.length < 1) {
             return false;

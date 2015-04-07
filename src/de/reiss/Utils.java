@@ -52,4 +52,8 @@ public class Utils {
         String pre = (si ? "kMGTPE" : "KMGTPE").charAt(exp - 1) + (si ? "" : "i");
         return String.format("%.1f %sB", bytes / Math.pow(unit, exp), pre);
     }
+
+    public static File getDownloadedFilesDirectory() {
+        return new File(Constants.FOLDER_NAME_FILES);
+    }
 }

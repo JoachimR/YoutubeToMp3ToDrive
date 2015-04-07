@@ -89,7 +89,11 @@ public class DriveApi {
     /**
      * https://developers.google.com/drive/v2/reference/files/insert
      */
-    public static File insertFile(Drive service, String title, String filename) {
+    public static File insertFile(Drive service, String title, java.io.File fileToInsert) {
+        if(fileToInsert==null || !fileToInsert.exists() || fileToInsert.isDirectory()) {
+            return null;
+        }
+
         // File's metadata.
         File body = new File();
         body.setTitle(title);
@@ -101,8 +105,8 @@ public class DriveApi {
 //        }
 
         // File's content.
-        java.io.File fileContent = new java.io.File(filename);
-        FileContent mediaContent = new FileContent("", fileContent);
+
+        FileContent mediaContent = new FileContent("", fileToInsert);
         try {
             File file = service.files().insert(body, mediaContent).execute();
 
@@ -180,7 +184,7 @@ public class DriveApi {
      * @param service Drive API service instance.
      * @return List of File resources.
      */
-    public static List<File> retrieveAllFiles(Drive service) throws IOException {
+    public static List<File> retrieveAllUploadedFiles(Drive service) throws IOException {
         List<File> result = new ArrayList<File>();
         Drive.Files.List request = service.files().list();
 
@@ -204,7 +208,7 @@ public class DriveApi {
     /**
      * https://developers.google.com/drive/v2/reference/files/update
      */
-    public static File updateFile(Drive service, String fileId, String filename ) {
+    public static File updateFile(Drive service, String fileId, String filename) {
         try {
             // First retrieve the file from the API.
             File file = service.files().get(fileId).execute();
@@ -212,6 +216,10 @@ public class DriveApi {
 
             // File's new content.
             java.io.File fileContent = new java.io.File(filename);
+            if (fileContent == null || !fileContent.exists()) {
+                System.out.println("Did not find file '" + filename + "'");
+                return null;
+            }
             FileContent mediaContent = new FileContent(mimeType, fileContent);
 
             // Send the request to the API.

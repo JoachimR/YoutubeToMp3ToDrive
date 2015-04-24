@@ -1,5 +1,7 @@
 package de.reiss.modules;
 
+import de.reiss.Logger;
+
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 
@@ -30,7 +32,7 @@ public class Shell {
 
     private static void print(String s, boolean silent) {
         if (!silent) {
-            System.out.println(s);
+            Logger.log(s);
         }
     }
 

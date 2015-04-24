@@ -8,6 +8,7 @@ import com.google.api.services.drive.model.File;
 import com.google.api.services.drive.model.FileList;
 import com.google.api.services.drive.model.Permission;
 import com.google.api.services.drive.model.PermissionList;
+import de.reiss.Logger;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -26,12 +27,12 @@ public class DriveApi {
 
         try {
             File file = service.files().get(fileId).execute();
-            System.out.println(file);
-//            System.out.println("Title: " + file.getTitle());
-//            System.out.println("Description: " + file.getDescription());
-//            System.out.println("MIME type: " + file.getMimeType());
+            Logger.log(file);
+//            Logger.log("Title: " + file.getTitle());
+//            Logger.log("Description: " + file.getDescription());
+//            Logger.log("MIME type: " + file.getMimeType());
         } catch (IOException e) {
-            System.out.println("An error occured: " + e);
+            Logger.log("An error occured: " + e);
         }
     }
 
@@ -80,7 +81,7 @@ public class DriveApi {
             return service.permissions().update(
                     fileId, permissionId, permission).execute();
         } catch (IOException e) {
-            System.out.println("An error occurred: " + e);
+            Logger.log("An error occurred: " + e);
         }
         return null;
     }
@@ -111,12 +112,12 @@ public class DriveApi {
             File file = service.files().insert(body, mediaContent).execute();
 
 
-            System.out.println("File ID: " + file.getId());
+            Logger.log("File ID: " + file.getId());
 
             return file;
         } catch (Exception e) {
             e.printStackTrace();
-            System.out.println("An error occured: " + e);
+            Logger.log("An error occured: " + e);
         }
         return null;
     }
@@ -134,13 +135,13 @@ public class DriveApi {
             Permission permission = service.permissions().get(
                     fileId, permissionId).execute();
 
-            System.out.println("Name: " + permission.getName());
-            System.out.println("Role: " + permission.getRole());
+            Logger.log("Name: " + permission.getName());
+            Logger.log("Role: " + permission.getRole());
 //            for (String additionalRole : permission.getAdditionalRoles()) {
-//                System.out.println("Additional role: " + additionalRole);
+//                Logger.log("Additional role: " + additionalRole);
 //            }
         } catch (IOException e) {
-            System.out.println("An error occured: " + e);
+            Logger.log("An error occured: " + e);
         }
     }
 
@@ -157,7 +158,7 @@ public class DriveApi {
             PermissionList permissions = service.permissions().list(fileId).execute();
             return permissions.getItems();
         } catch (IOException e) {
-            System.out.println("An error occurred: " + e);
+            Logger.log("An error occurred: " + e);
         }
 
         return null;
@@ -172,7 +173,7 @@ public class DriveApi {
         try {
             return service.permissions().insert(fileId, newPermission).execute();
         } catch (IOException e) {
-            System.out.println("An error occurred: " + e);
+            Logger.log("An error occurred: " + e);
         }
         return null;
     }
@@ -195,7 +196,7 @@ public class DriveApi {
                 result.addAll(files.getItems());
                 request.setPageToken(files.getNextPageToken());
             } catch (IOException e) {
-                System.out.println("An error occurred: " + e);
+                Logger.log("An error occurred: " + e);
                 request.setPageToken(null);
             }
         } while (request.getPageToken() != null &&
@@ -217,7 +218,7 @@ public class DriveApi {
             // File's new content.
             java.io.File fileContent = new java.io.File(filename);
             if (fileContent == null || !fileContent.exists()) {
-                System.out.println("Did not find file '" + filename + "'");
+                Logger.log("Did not find file '" + filename + "'");
                 return null;
             }
             FileContent mediaContent = new FileContent(mimeType, fileContent);
@@ -227,7 +228,7 @@ public class DriveApi {
 
             return updatedFile;
         } catch (IOException e) {
-            System.out.println("An error occurred: " + e);
+            Logger.log("An error occurred: " + e);
             return null;
         }
     }

@@ -10,6 +10,7 @@ import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.DriveScopes;
 import de.reiss.Config;
+import de.reiss.Logger;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -51,8 +52,8 @@ public class DriveService {
                 .setAccessType("offline")
                 .setApprovalPrompt("auto").build();
         String url = flow.newAuthorizationUrl().setRedirectUri(Config.DRIVE_REDIRECT_URI).build();
-        System.out.println("Please open the following URL in your browser then type the authorization code:");
-        System.out.println("  " + url);
+        Logger.log("Please open the following URL in your browser then type the authorization code:");
+        Logger.log("  " + url);
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         String code = br.readLine();
         GoogleTokenResponse response = flow.newTokenRequest(code).setRedirectUri(Config.DRIVE_REDIRECT_URI).execute();
@@ -64,10 +65,10 @@ public class DriveService {
         String accessToken = credential.getAccessToken();
         String refreshToken = credential.getRefreshToken();
 
-        System.out.println("accessToken");
-        System.out.println(accessToken);
-        System.out.println("refreshToken");
-        System.out.println(refreshToken);
+        Logger.log("accessToken");
+        Logger.log(accessToken);
+        Logger.log("refreshToken");
+        Logger.log(refreshToken);
 
         Drive service = new Drive.Builder(httpTransport, jsonFactory, credential).build();
     }

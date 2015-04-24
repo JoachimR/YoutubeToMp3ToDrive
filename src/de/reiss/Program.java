@@ -73,22 +73,20 @@ public class Program {
 
 
 
-                    System.out.println("==============================================================================");
-                    System.out.println("TITLE: " + item.getTitle());
-                    System.out.println("LINK: " + item.getLink());
-                    System.out.println("PUB DATE: " + item.getPubDate());
-                    System.out.println("");
+                    Logger.log("==============================================================================");
+                    Logger.log("TITLE: " + item.getTitle());
+                    Logger.log("LINK: " + item.getLink());
+                    Logger.log("PUB DATE: " + item.getPubDate());
+                    Logger.log("");
 
 
                     String filename = Utils.replaceUmlaut(item.getTitle()) + "." + Config.AUDIO_FILE_FORMAT;
 
 
                     if (isFileAlreadyDownloaded(filename)) {
-                        System.out.println("File '" + filename +
-                                "' already downloaded , not doing it again.");
+                        Logger.log("File '" + filename + "' already downloaded , not doing it again.");
                     } else {
-                        System.out.println("File '" + filename +
-                                "' not yet downloaded , downloading now.");
+                        Logger.log("File '" + filename + "' not yet downloaded , downloading now.");
 
                         filename = YoutubeAudioDownloader.downloadItemAsMp3(item);
                     }
@@ -117,7 +115,7 @@ public class Program {
 
                     }
 
-                    System.out.println("==============================================================================");
+                    Logger.log("==============================================================================");
 
                 }
             }
@@ -130,7 +128,7 @@ public class Program {
             java.io.File fileContent = new java.io.File(
                     test ? Config.DRIVE_PUBLISH_JSON_TEST_FILE_NAME : Config.DRIVE_PUBLISH_JSON_FILE_NAME);
             if (fileContent == null || !fileContent.exists()) {
-                System.out.println("Did not find file '" + fileContent + "'");
+                Logger.log("Did not find file '" + fileContent + "'");
             }
             DriveApi.updateFile(DriveService.getDriveService(),
                     (test ? Config.DRIVE_PUBLISH_JSON_TEST_FILE_ID : Config.DRIVE_PUBLISH_JSON_FILE_ID),
@@ -139,7 +137,7 @@ public class Program {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        System.out.println("Program finished");
+        Logger.log("Program finished");
     }
 
     /**
@@ -157,7 +155,7 @@ public class Program {
                     if (onlineFile != null) {
                         String onlineMd5 = onlineFile.getMd5Checksum();
                         if (onlineMd5 != null && onlineMd5.equals(downloadItem.md5)) {
-                            System.out.println("File '" + downloadItem.filename + "' was already uploaded, not doing it again");
+                            // Logger.log("File '" + downloadItem.filename + "' was already uploaded, not doing it again");
                             return onlineFile;
                         }
                     }
@@ -165,7 +163,7 @@ public class Program {
             }
 
             // file not found online, thus upload it now
-            System.out.println("File '" + downloadItem.filename + "' is not already uploaded, doing it now");
+            Logger.log("File '" + downloadItem.filename + "' is not already uploaded, doing it now");
             return FilesUploader.uploadNow(DriveService.getDriveService(), new File(Constants.FOLDER_NAME_FILES + "/" + downloadItem.filename));
         } catch (Exception e) {
             e.printStackTrace();
@@ -196,7 +194,7 @@ public class Program {
                 try {
                     String filename = file.getCanonicalPath();
                     if (filename.endsWith(".part")) {
-                        System.out.println("Deleting file '" + filename + "'");
+                        Logger.log("Deleting file '" + filename + "'");
                         file.delete();
                     }
                 } catch (IOException e) {
@@ -231,8 +229,8 @@ public class Program {
 
     private static void printAllVideosFromChannel() throws IOException, FeedException {
         int counter = 0;
-        System.out.println("Starting to print all items of youtube channel '" + Config.YOUTUBE_RSS_FEED_URL + "' ");
-        System.out.println("==============================================================================");
+        Logger.log("Starting to print all items of youtube channel '" + Config.YOUTUBE_RSS_FEED_URL + "' ");
+        Logger.log("==============================================================================");
         String url;
         Feed feed;
         List<Item> allItems;
@@ -242,23 +240,23 @@ public class Program {
             feed = FeedExtractor.getFeed(url);
 
             if (feed == null || feed.getItemList() == null || feed.getItemList().isEmpty()) {
-                System.out.println("No more items available when using index " + index);
+                Logger.log("No more items available when using index " + index);
                 break;
             }
 
             allItems = feed.getItemList();
             for (Item item : allItems) {
                 counter++;
-                System.out.println("--------------------------------------");
-                System.out.println("TITLE: " + item.getTitle());
-                System.out.println("LINK: " + item.getLink());
-                System.out.println("PUB DATE: " + item.getPubDate());
-                System.out.println("--------------------------------------");
+                Logger.log("--------------------------------------");
+                Logger.log("TITLE: " + item.getTitle());
+                Logger.log("LINK: " + item.getLink());
+                Logger.log("PUB DATE: " + item.getPubDate());
+                Logger.log("--------------------------------------");
             }
 
         }
-        System.out.println("==============================================================================");
-        System.out.println("End of listing items");
-        System.out.println("Amount of videos in youtube channel '" + Config.YOUTUBE_RSS_FEED_URL + "' :" + counter);
+        Logger.log("==============================================================================");
+        Logger.log("End of listing items");
+        Logger.log("Amount of videos in youtube channel '" + Config.YOUTUBE_RSS_FEED_URL + "' :" + counter);
     }
 }

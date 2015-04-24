@@ -2,6 +2,7 @@ package de.reiss.modules.downloader;
 
 import com.ernieyu.feedparser.Item;
 import de.reiss.Config;
+import de.reiss.Logger;
 import de.reiss.Utils;
 import de.reiss.modules.Shell;
 
@@ -11,28 +12,28 @@ import java.io.IOException;
 public class YoutubeAudioDownloader {
 
     public static String downloadItemAsMp3(Item item) throws IOException {
-        System.out.println("==============================================================================");
-        System.out.println("TITLE: " + item.getTitle());
-        System.out.println("LINK: " + item.getLink());
-        System.out.println("PUB DATE: " + item.getPubDate());
-        System.out.println("");
+        Logger.log("==============================================================================");
+        Logger.log("TITLE: " + item.getTitle());
+        Logger.log("LINK: " + item.getLink());
+        Logger.log("PUB DATE: " + item.getPubDate());
+        Logger.log("");
 
         final String filename = Utils.replaceUmlaut(item.getTitle());
 
         final String filenameWithFormat = filename + "." + Config.AUDIO_FILE_FORMAT;
 
         if (isFileAlreadyDownloaded(filenameWithFormat)) {
-            System.out.println("File '" + filenameWithFormat +
+            Logger.log("File '" + filenameWithFormat +
                     "' already downloaded , not doing it again.");
         } else {
-            System.out.println("File '" + filenameWithFormat +
+            Logger.log("File '" + filenameWithFormat +
                     "' not yet downloaded , downloading now.");
 
             Shell.executeCommand(getYoutubeDLShellCmd(filename) + " " + item.getLink(), false);
         }
 
 
-        System.out.println("==============================================================================");
+        Logger.log("==============================================================================");
 
         return filenameWithFormat;
     }

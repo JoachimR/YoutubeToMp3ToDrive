@@ -14,10 +14,10 @@ public class YoutubeAudioDownloader {
         final String filename =   Utils.replaceUmlaut(item.getTitle());
         final String filenameWithFormat = filename + "." + Config.AUDIO_FILE_FORMAT;
 
-        // put subfolder into filename
-        final String subFolderWithFilename = Constants.FOLDER_NAME_FILES + "/" + filename;
+        // put folder into filename
+        final String folderWithFilename = Constants.FOLDER_NAME_FILES + "/" + filename;
 
-        Shell.executeCommand(ytdl(subFolderWithFilename) + " " + item.getLink(), false);
+        Shell.executeCommand(ytdl(folderWithFilename) + " " + item.getLink(), false);
 
         return filenameWithFormat;
     }
@@ -30,7 +30,7 @@ public class YoutubeAudioDownloader {
      */
     private static String ytdl(String filename) {
         return "youtube-dl " +
-                "--continue --ignore-errors --no-overwrites --restrict-filenames " +
+                "--add-metadata -x --continue --ignore-errors --no-overwrites --restrict-filenames " +
                 "--extract-audio --audio-format " + Config.AUDIO_FILE_FORMAT + " " +
                 "--output " + filename + "." + "%(ext)s";
     }

@@ -44,12 +44,12 @@ public class Program {
 
             // printAllVideosFromChannel();
 
-            for (int index = 1; index < 5000; index += 50) {
+//            for (int index = 1; index < 100; index += 50) {
 
 
                 String url = Config.YOUTUBE_RSS_FEED_URL;
 
-                url += "?&max-results=50&start-index=" + index;
+//                url += "?&max-results=50&start-index=" + index;
 
                 deleteAllFileParts();
 
@@ -71,23 +71,25 @@ public class Program {
 //                        continue;
 //                    }
 
-
-
-                    Logger.log("==============================================================================");
-                    Logger.log("TITLE: " + item.getTitle());
-                    Logger.log("LINK: " + item.getLink());
-                    Logger.log("PUB DATE: " + item.getPubDate());
-                    Logger.log("");
+                    if (item.getTitle().contains("devicesupport")) {
+                        continue;
+                    }
 
 
                     String filename = Utils.replaceUmlaut(item.getTitle()) + "." + Config.AUDIO_FILE_FORMAT;
 
+                    final boolean alrDld = isFileAlreadyDownloaded(filename);
 
-                    if (isFileAlreadyDownloaded(filename)) {
-                        Logger.log("File '" + filename + "' already downloaded , not doing it again.");
+                    Logger.log("==============================================================================", alrDld);
+                    Logger.log("TITLE: " + item.getTitle(), alrDld);
+                    Logger.log("LINK: " + item.getLink(), alrDld);
+                    Logger.log("PUB DATE: " + item.getPubDate(), alrDld);
+                    Logger.log("", alrDld);
+
+                    if (alrDld) {
+                        Logger.log("File '" + filename + "' already downloaded , not doing it again.", true);
                     } else {
                         Logger.log("File '" + filename + "' not yet downloaded , downloading now.");
-
                         filename = YoutubeAudioDownloader.downloadItemAsMp3(item);
                     }
 
@@ -102,7 +104,7 @@ public class Program {
 
                     downloadItem.filename = filename;
 
-                    String md5 = MD5Creator.getMD5Checksum(Constants.FOLDER_NAME_FILES + "/" +  filename);
+                    String md5 = MD5Creator.getMD5Checksum(Constants.FOLDER_NAME_FILES + "/" + filename);
                     if (md5.length() > 0) {
                         downloadItem.md5 = md5;
 
@@ -115,10 +117,10 @@ public class Program {
 
                     }
 
-                    Logger.log("==============================================================================");
+                    Logger.log("==============================================================================", alrDld);
 
                 }
-            }
+//            }
 
             boolean test = false;
 

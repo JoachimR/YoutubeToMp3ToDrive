@@ -3,8 +3,9 @@ package de.reiss;
 public class Config {
 
     public static final String YOUTUBE_CHANNEL = "xxxxxx";
-    public static final String YOUTUBE_RSS_FEED_URL = "http://gdata.youtube.com/feeds/api/users/" +
-            YOUTUBE_CHANNEL + "/uploads";
+    public static final String YOUTUBE_RSS_FEED_URL =
+            "https://www.youtube.com/feeds/videos.xml?user="+
+                    YOUTUBE_CHANNEL;
 
     public static final String DRIVE_PUBLISH_JSON_FILE_NAME = "json/publish.json";
     public static final String DRIVE_PUBLISH_JSON_FILE_ID = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx";

@@ -1,8 +1,8 @@
 #!/bin/bash
 
  while sleep 900; do
-  NOW=$(date +"%Y_%m_%d__%T")
-  FILE="logfile_$NOW.txt"
+  DAY=$(date +"%Y_%m_%d")
+  FILE="logfile_$DAY.txt"
   echo "Running program and logging output to $FILE"
   {
    echo "----------------------------------------------------------------------------------------------------------"

@@ -62,7 +62,7 @@ public class JsonBuilder {
             fileJsonObject.add("md5", new JsonPrimitive(downloadItem.md5));
 
             String ffProbeInfoString = Shell.executeCommand(Constants.CMD_FFPROBE +
-                    Constants.FOLDER_NAME_FILES + "/" + downloadItem.filename, true);
+                    Constants.FOLDER_NAME_FILES + "/" + downloadItem.filename, false);
 
             JsonParser jsonParser = new JsonParser();
             JsonObject ffProbe = (JsonObject) jsonParser.parse(ffProbeInfoString);
@@ -72,15 +72,19 @@ public class JsonBuilder {
             double dur = Double.parseDouble(ffprobeFormat.getAsJsonPrimitive("duration").getAsString());
             fileJsonObject.add("duration", new JsonPrimitive((int) dur));
 
-
-            long bytes = ffprobeFormat.getAsJsonPrimitive("size").getAsLong();
+            long bytes = (long) ffprobeFormat.getAsJsonPrimitive("size").getAsDouble();
             fileJsonObject.add("filesize", new JsonPrimitive(Utils.humanReadableByteCount(bytes, true)));
 
             JsonObject ffprobeFormatTags = ffprobeFormat.getAsJsonObject("tags");
 
             JsonPrimitive createTime = ffprobeFormatTags.getAsJsonPrimitive("creation_time");
             SimpleDateFormat createTimeDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-            Long timestamp = createTimeDateFormat.parse(createTime.getAsString()).getTime();
+            Long timestamp;
+            if (createTime != null) {
+                timestamp = createTimeDateFormat.parse(createTime.getAsString()).getTime();
+            } else {
+                timestamp = pubDate.getTime();
+            }
             fileJsonObject.add("created", new JsonPrimitive(timestamp));
 
             return fileJsonObject;
